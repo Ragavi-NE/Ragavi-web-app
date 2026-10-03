@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AttendX — The Distinguished Society of Presence</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+
+  :root{
+    --bg: #0a0d0b;
+    --bg-deep: #060807;
+    --card: #121a16;
+    --card-2: #171f1a;
+    --hairline: rgba(201,168,106,0.28);
+    --gold: #c9a86a;
+    --gold-bright: #e8cf8f;
+    --gold-dim: #8a7548;
+    --wine: #6e2438;
+    --wine-bright: #9c3a52;
+    --emerald: #14332c;
+    --ivory: #f2ead9;
+    --muted: #a89f8c;
+    --muted-2: #6f6858;
+    --danger: #b3543f;
+    --shadow: 0 20px 60px rgba(0,0,0,0.55);
+  }
+
+  *{ box-sizing: border-box; }
+
+  html, body{
+    margin:0; padding:0;
+    background:
+      radial-gradient(1200px 800px at 15% -10%, rgba(201,168,106,0.08), transparent 60%),
+      radial-gradient(900px 700px at 110% 10%, rgba(110,36,56,0.14), transparent 55%),
+      var(--bg);
+    color: var(--ivory);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+  }
+
+  #app{ min-height:100vh; }
+
+  ::selection{ background: var(--gold); color:#111; }
+
+  .mono{ font-family:'JetBrains Mono', monospace; }
+  .serif{ font-family:'Playfair Display', serif; }
+
+  a, button{ font-family: inherit; }
+
+  /* ---------- CREST ---------- */
+  .crest{
+    width:64px; height:64px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    background: radial-gradient(circle at 35% 30%, #2a2118, #0d0b08 75%);
+    border: 1.5px solid var(--gold);
+    box-shadow: 0 0 0 4px rgba(201,168,106,0.08), 0 8px 24px rgba(0,0,0,0.5);
+    position: relative;
+    flex-shrink:0;
+  }
+  .crest::before{
+    content:'';
+    position:absolute; inset:6px;
+    border-radius:50%;
+    border: 1px solid var(--gold-dim);
+  }
+  .crest span{
+    font-family:'Playfair Display', serif;
+    font-weight:700;
+    font-size:20px;
+    letter-spacing:1px;
+    background: linear-gradient(180deg, var(--gold-bright), var(--gold));
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+  }
+  .crest.sm{ width:44px; height:44px; }
+  .crest.sm span{ font-size:15px; }
+
+  /* ---------- FADE ---------- */
+  .fade-in{ animation: fadeIn .6s ease both; }
+  @keyframes fadeIn{ from{ opacity:0; transform: translateY(8px);} to{ opacity:1; transform:none; } }
+
+  /* ================= LOGIN ================= */
+  .login-wrap{
+    min-height:100vh;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding: 48px 20px;
+  }
+  .brand-block{ display:flex; flex-direction:column; align-items:center; text-align:center; margin-bottom:34px; }
+  .brand-block .crest{ margin-bottom:18px; }
+  .brand-block h1{
+    font-family:'Playfair Display', serif;
+    font-size: clamp(36px, 6vw, 54px);
+    font-weight: 900;
+    letter-spacing: 2px;
+    margin:0;
+    background: linear-gradient(180deg, var(--ivory), var(--gold-bright) 130%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .brand-block .tagline{
+    margin-top:10px;
+    color: var(--muted);
+    font-size:13px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+  .brand-block .rule{
+    width:80px; height:1px; margin-top:18px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+
+  .role-toggle{
+    display:flex; gap:2px; background: var(--card); border:1px solid var(--hairline);
+    border-radius:999px; padding:4px; margin-bottom:28px;
+  }
+  .role-toggle button{
+    border:none; background:transparent; color:var(--muted);
+    padding:10px 26px; border-radius:999px; cursor:pointer;
+    font-size:13px; letter-spacing:1.5px; text-transform:uppercase;
+    transition: all .25s ease;
+  }
+  .role-toggle button.active{
+    background: linear-gradient(180deg, var(--gold-bright), var(--gold));
+    color:#1a1408; font-weight:600;
+  }
+
+  .login-card{
+    width:100%; max-width:460px;
+    background: linear-gradient(180deg, var(--card), var(--card-2));
+    border:1px solid var(--hairline);
+    border-radius:18px;
+    padding:36px;
+    box-shadow: var(--shadow);
+    position:relative;
+  }
+  .login-card::before, .login-card::after{
+    content:''; position:absolute; width:10px; height:10px; border: 1px solid var(--gold-dim);
+  }
+  .login-card::before{ top:10px; left:10px; border-right:none; border-bottom:none; }
+  .login-card::after{ bottom:10px; right:10px; border-left:none; border-top:none; }
+
+  .field{ margin-bottom:18px; }
+  .field label{
+    display:block; font-size:11px; letter-spacing:2px; text-transform:uppercase;
+    color: var(--gold); margin-bottom:8px;
+  }
+  .field input{
+    width:100%; background: var(--bg-deep); border:1px solid var(--hairline);
+    color: var(--ivory); padding:13px 14px; border-radius:9px; font-size:15px;
+    outline:none; transition: border-color .2s ease;
+  }
+  .field input:focus{ border-color: var(--gold); }
+
+  .btn-primary{
+    width:100%; padding:14px; border-radius:9px; border:1px solid var(--gold);
+    background: linear-gradient(180deg, var(--gold-bright), var(--gold));
+    color:#1a1408; font-weight:700; letter-spacing:1px; text-transform:uppercase;
+    font-size:13px; cursor:pointer; transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .btn-primary:hover{ transform: translateY(-1px); box-shadow:0 10px 24px rgba(201,168,106,0.25); }
+  .btn-primary:active{ transform: translateY(0); }
+
+  .card-hint{ text-align:center; color: var(--muted-2); font-size:12px; margin-top:16px; letter-spacing:0.5px; }
+
+  .student-grid{
+    display:grid; grid-template-columns: repeat(3, 1fr); gap:12px;
+    max-height: 420px; overflow-y:auto; padding-right:4px;
+  }
+  .student-grid::-webkit-scrollbar{ width:6px; }
+  .student-grid::-webkit-scrollbar-thumb{ background: var(--gold-dim); border-radius:6px; }
+
+  .member-card{
+    background: var(--bg-deep); border:1px solid var(--hairline); border-radius:12px;
+    padding:14px 8px; text-align:center; cursor:pointer;
+    transition: all .2s ease;
+  }
+  .member-card:hover{ border-color: var(--gold); transform: translateY(-3px); background: rgba(201,168,106,0.06); }
+  .member-card .avatar{ font-size:30px; line-height:1; margin-bottom:8px; }
+  .member-card .mname{ font-size:12px; color: var(--muted); letter-spacing:0.5px; }
+
+  /* ================= SHELL / HEADER ================= */
+  .shell{ max-width:1100px; margin:0 auto; padding: 28px 20px 80px; }
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+    margin-bottom:30px; padding-bottom:20px; border-bottom:1px solid var(--hairline);
+  }
+  .topbar .id{ display:flex; align-items:center; gap:14px; }
+  .topbar h2{ font-family:'Playfair Display', serif; margin:0; font-size:22px; letter-spacing:0.5px;}
+  .topbar .sub{ font-size:11px; color: var(--gold); letter-spacing:2px; text-transform:uppercase; margin-top:2px;}
+  .btn-ghost{
+    background:transparent; border:1px solid var(--hairline); color: var(--muted);
+    padding:9px 18px; border-radius:999px; font-size:12px; letter-spacing:1px;
+    text-transform:uppercase; cursor:pointer; transition: all .2s ease;
+  }
+  .btn-ghost:hover{ border-color: var(--wine-bright); color: var(--ivory); }
+
+  .section-label{
+    font-size:11px; letter-spacing:3px; text-transform:uppercase; color: var(--gold);
+    margin: 34px 0 14px;
+  }
+
+  .pills{ display:flex; gap:10px; flex-wrap:wrap; }
+  .pill{
+    background: var(--card); border:1px solid var(--hairline); color: var(--muted);
+    padding:9px 18px; border-radius:999px; font-size:12.5px; cursor:pointer;
+    transition: all .2s ease; letter-spacing:0.3px;
+  }
+  .pill:hover{ color: var(--ivory); border-color: var(--gold); }
+  .pill.active{
+    background: linear-gradient(180deg, var(--gold-bright), var(--gold));
+    color:#1a1408; font-weight:600; border-color: var(--gold);
+  }
+
+  .session-strip{
+    display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;
+    margin-top:16px; padding:14px 18px; background: rgba(201,168,106,0.05);
+    border:1px solid var(--hairline); border-radius:10px; font-size:12.5px; color: var(--muted);
+  }
+  .session-strip b{ color: var(--gold-bright); font-weight:600; }
+
+  /* ---------- ROSTER ---------- */
+  .roster-grid{
+    display:grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap:16px; margin-top:18px;
+  }
+  .roster-card{
+    background: linear-gradient(180deg, var(--card), var(--card-2));
+    border:1px solid var(--hairline); border-radius:14px; padding:18px;
+    display:flex; flex-direction:column; gap:10px;
+  }
+  .roster-top{ display:flex; align-items:center; gap:12px; }
+  .roster-top .avatar{
+    font-size:34px; width:54px; height:54px; border-radius:50%;
+    background: var(--bg-deep); display:flex; align-items:center; justify-content:center;
+    border:1px solid var(--hairline);
+  }
+  .roster-name{ font-weight:600; font-size:15px; }
+  .roster-rank{ font-size:11px; color: var(--gold); letter-spacing:0.5px; margin-top:2px; }
+
+  .xp-row{ display:flex; justify-content:space-between; font-size:11px; color: var(--muted); }
+  .xp-bar{ height:6px; border-radius:6px; background: var(--bg-deep); overflow:hidden; border:1px solid var(--hairline); }
+  .xp-bar-fill{ height:100%; background: linear-gradient(90deg, var(--gold-dim), var(--gold-bright)); transition: width .5s ease; }
+
+  .toggle-row{ display:flex; gap:8px; margin-top:4px; }
+  .toggle-btn{
+    flex:1; padding:8px 0; border-radius:8px; border:1px solid var(--hairline);
+    background: transparent; color: var(--muted); font-size:11.5px; letter-spacing:1px;
+    text-transform:uppercase; cursor:pointer; transition: all .2s ease;
+  }
+  .toggle-btn.present.active{ background: rgba(20,51,44,0.9); border-color:#2d6a54; color:#8fe3c4; }
+  .toggle-btn.absent.active{ background: rgba(110,36,56,0.55); border-color: var(--wine-bright); color:#f0b9c6; }
+
+  .save-bar{
+    position: sticky; bottom:18px; margin-top:26px;
+    display:flex; justify-content:flex-end;
+  }
+  .save-bar button{
+    padding:14px 32px; border-radius:999px; border:1px solid var(--gold);
+    background: linear-gradient(180deg, var(--gold-bright), var(--gold));
+    color:#1a1408; font-weight:700; letter-spacing:1.5px; text-transform:uppercase;
+    font-size:13px; cursor:pointer; box-shadow: var(--shadow);
+  }
+
+  /* ---------- LEADERBOARD ---------- */
+  .board{ display:flex; flex-direction:column; gap:8px; margin-top:14px; }
+  .board-row{
+    display:flex; align-items:center; gap:14px; padding:12px 16px;
+    background: var(--card); border:1px solid var(--hairline); border-radius:10px;
+  }
+  .board-row .rank-no{ width:22px; text-align:center; font-family:'Playfair Display',serif; color: var(--gold); font-weight:700; }
+  .board-row .avatar{ font-size:22px; }
+  .board-row .name{ flex:1; font-size:13.5px; }
+  .board-row .xp{ font-size:12px; color: var(--gold-bright); }
+  .board-row.gold{ border-color: var(--gold); box-shadow: 0 0 0 1px rgba(201,168,106,0.15) inset; }
+
+  /* ---------- STUDENT PROFILE ---------- */
+  .profile-card{
+    background: linear-gradient(160deg, var(--card), var(--card-2));
+    border:1px solid var(--hairline); border-radius:18px; padding:32px;
+    display:flex; align-items:center; gap:26px; flex-wrap:wrap;
+    box-shadow: var(--shadow);
+  }
+  .profile-avatar{
+    width:96px; height:96px; border-radius:50%; font-size:52px;
+    display:flex; align-items:center; justify-content:center;
+    background: radial-gradient(circle at 35% 30%, #22291f, var(--bg-deep) 75%);
+    border:2px solid var(--gold);
+    box-shadow: 0 0 0 5px rgba(201,168,106,0.08);
+    flex-shrink:0;
+  }
+  .profile-info{ flex:1; min-width:220px; }
+  .profile-info .pname{ font-family:'Playfair Display', serif; font-size:24px; margin:0 0 4px; }
+  .profile-info .prank{
+    display:inline-flex; align-items:center; gap:8px;
+    font-size:13px; color: var(--gold-bright); letter-spacing:1px;
+    margin-bottom:14px;
+  }
+  .profile-info .prank .lv{ color: var(--muted); font-size:11px; }
+  .xp-num-row{ display:flex; justify-content:space-between; font-size:12px; color: var(--muted); margin-bottom:6px; }
+  .xp-bar-lg{ height:10px; border-radius:8px; background: var(--bg-deep); overflow:hidden; border:1px solid var(--hairline); }
+  .xp-bar-lg .xp-bar-fill{ height:100%; }
+
+  .checkin-card{
+    margin-top:22px; background: var(--card); border:1px solid var(--hairline); border-radius:14px;
+    padding:22px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px;
+  }
+  .checkin-card .cc-title{ font-size:14px; color: var(--muted); }
+  .checkin-card .cc-title b{ color: var(--ivory); }
+  .status-badge{
+    padding:8px 18px; border-radius:999px; font-size:11.5px; letter-spacing:1px; text-transform:uppercase;
+  }
+  .status-badge.present{ background: rgba(20,51,44,0.9); color:#8fe3c4; border:1px solid #2d6a54; }
+  .status-badge.absent{ background: rgba(110,36,56,0.45); color:#f0b9c6; border:1px solid var(--wine-bright); }
+  .status-badge.pending{ background: rgba(201,168,106,0.1); color: var(--gold-bright); border:1px solid var(--hairline); }
+
+  .history-table{ width:100%; border-collapse: collapse; margin-top:14px; font-size:13px; }
+  .history-table th{
+    text-align:left; font-size:10.5px; letter-spacing:1.5px; text-transform:uppercase;
+    color: var(--gold); padding:10px 12px; border-bottom:1px solid var(--hairline);
+  }
+  .history-table td{ padding:11px 12px; border-bottom:1px solid rgba(201,168,106,0.1); color: var(--muted); }
+  .history-table tr:last-child td{ border-bottom:none; }
+  .history-table td.status-present{ color:#8fe3c4; }
+  .history-table td.status-absent{ color:#f0b9c6; }
+  .empty-row{ text-align:center; padding:22px; color: var(--muted-2); font-style:italic; }
+
+  /* ---------- LEVEL UP MODAL ---------- */
+  .modal-overlay{
+    position:fixed; inset:0; background: rgba(4,5,4,0.78); backdrop-filter: blur(4px);
+    display:flex; align-items:center; justify-content:center; z-index:999;
+    animation: fadeIn .3s ease both;
+  }
+  .levelup-card{
+    width:min(420px, 90vw); text-align:center; padding:44px 32px;
+    background: linear-gradient(180deg, #16201a, #0c110d);
+    border:1px solid var(--gold); border-radius:20px;
+    box-shadow: 0 0 0 8px rgba(201,168,106,0.06), 0 30px 80px rgba(0,0,0,0.7);
+    animation: sealPop .55s cubic-bezier(.2,1.4,.4,1) both;
+  }
+  @keyframes sealPop{ from{ opacity:0; transform: scale(.7) rotate(-6deg);} to{opacity:1; transform:none;} }
+  .levelup-seal{ font-size:64px; margin-bottom:6px; animation: sealSpin 1s ease both; }
+  @keyframes sealSpin{ from{ transform: scale(.3) rotate(-40deg); opacity:0;} to{ transform:none; opacity:1;} }
+  .levelup-card .lu-eyebrow{ font-size:11px; letter-spacing:3px; text-transform:uppercase; color: var(--gold); margin-bottom:10px;}
+  .levelup-card h3{ font-family:'Playfair Display', serif; font-size:26px; margin: 4px 0 6px; }
+  .levelup-card .lu-title{ font-size:19px; color: var(--gold-bright); font-weight:600; margin-bottom:22px; }
+  .levelup-card button{
+    padding:12px 34px; border-radius:999px; border:1px solid var(--gold);
+    background: linear-gradient(180deg, var(--gold-bright), var(--gold)); color:#1a1408;
+    font-weight:700; letter-spacing:1px; text-transform:uppercase; font-size:12.5px; cursor:pointer;
+  }
+
+  @media (max-width: 640px){
+    .student-grid{ grid-template-columns: repeat(2, 1fr); }
+    .roster-grid{ grid-template-columns: 1fr 1fr; }
+    .profile-card{ flex-direction:column; text-align:center; }
+    .profile-info .prank{ justify-content:center; }
+  }
+
+  button:focus-visible, input:focus-visible, .pill:focus-visible, .member-card:focus-visible{
+    outline: 2px solid var(--gold-bright); outline-offset:2px;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  const SUBJECTS = ["Mathematics","Science","English Literature","History","Art & Design","Computer Science","Music","Physical Education"];
+  const AVATARS = ["🦁","🐯","🐼","🦊","🐨","🐵","🐰","🐸","🐶","🐱","🦉","🐺"];
+  const STUDENT_COUNT = AVATARS.length;
+  const XP_PER_PRESENT = 15;
+
+  const LEVELS = [
+    { min:0,    title:"Fresh Face",              icon:"🌱" },
+    { min:100,  title:"Steady Scholar",          icon:"📘" },
+    { min:250,  title:"Diligent Diplomat",       icon:"🎖️" },
+    { min:450,  title:"Punctual Prodigy",        icon:"⭐" },
+    { min:700,  title:"Elite Attendant",         icon:"👑" },
+    { min:1000, title:"Attendance Royalty",      icon:"💎" },
+    { min:1400, title:"Sovereign of Presence",   icon:"🏆" }
+  ];
+
+  const STORAGE_KEY = "attendx_data";
+
+  let data = null;
+  let session = { role:null, teacherName:"", studentId:null };
+  let ui = {
+    teacherSubject: SUBJECTS[0],
+    studentSubject: SUBJECTS[0],
+    loginRole: "teacher",
+    pendingMarks: {}
+  };
+  let levelUpQueue = [];
+
+  function todayKey(){ return new Date().toISOString().slice(0,10); }
+  function prettyDate(){
+    return new Date().toLocaleDateString(undefined, { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  }
+  function logKey(subject, date){ return subject + "|" + date; }
+  function getAvatar(id){ return AVATARS[(id-1) % AVATARS.length]; }
+
+  function getLevelInfo(xp){
+    let idx = 0;
+    for(let i=0;i<LEVELS.length;i++){ if(xp >= LEVELS[i].min) idx = i; }
+    const cur = LEVELS[idx];
+    const next = LEVELS[idx+1] || null;
+    const span = next ? (next.min - cur.min) : 1;
+    const progressed = next ? Math.min(100, Math.round(((xp - cur.min) / span) * 100)) : 100;
+    return { index: idx, title: cur.title, icon: cur.icon, min: cur.min, nextMin: next ? next.min : null, progress: progressed };
+  }
+
+  function defaultData(){
+    return {
+      students: Array.from({length: STUDENT_COUNT}, (_,i)=>({ id:i+1, xp:0 })),
+      logs: {}
+    };
+  }
+
+  async function loadData(){
+    try{
+      const res = await window.storage.get(STORAGE_KEY, true);
+      data = JSON.parse(res.value);
+    }catch(e){
+      data = defaultData();
+      await saveData();
+    }
+  }
+
+  async function saveData(){
+    try{
+      await window.storage.set(STORAGE_KEY, JSON.stringify(data), true);
+    }catch(e){
+      console.error("AttendX storage error:", e);
+    }
+  }
+
+  function getStudent(id){ return data.students.find(s => s.id === id); }
+
+  // Applies a set of {studentId: 'present'|'absent'} marks for subject+date,
+  // diffing against existing log, adjusting XP, and returning any level-ups.
+  function applyMarks(subject, date, marks){
+    const key = logKey(subject, date);
+    const prevLog = data.logs[key] || {};
+    const newLog = Object.assign({}, prevLog);
+    const levelUps = [];
+
+    Object.keys(marks).forEach(function(sidStr){
+      const sid = parseInt(sidStr, 10);
+      const student = getStudent(sid);
+      if(!student) return;
+      const newStatus = marks[sidStr];
+      const prevStatus = prevLog[sidStr] || "absent";
+      if(newStatus === prevStatus){ newLog[sidStr] = newStatus; return; }
+
+      const beforeIdx = getLevelInfo(student.xp).index;
+      if(newStatus === "present") student.xp += XP_PER_PRESENT;
+      else if(prevStatus === "present") student.xp -= XP_PER_PRESENT;
+      student.xp = Math.max(0, student.xp);
+      const afterIdx = getLevelInfo(student.xp).index;
+
+      newLog[sidStr] = newStatus;
+      if(afterIdx > beforeIdx){
+        levelUps.push({ studentId: sid, level: LEVELS[afterIdx] });
+      }
+    });
+
+    data.logs[key] = newLog;
+    return levelUps;
+  }
+
+  function getStudentHistory(studentId, subject){
+    const rows = [];
+    Object.keys(data.logs).forEach(function(key){
+      const parts = key.split("|");
+      const subj = parts[0], date = parts[1];
+      if(subj !== subject) return;
+      const entry = data.logs[key][studentId];
+      if(entry) rows.push({ date: date, status: entry });
+    });
+    rows.sort(function(a,b){ return a.date < b.date ? 1 : -1; });
+    return rows;
+  }
+
+  function attendanceRate(studentId, subject){
+    const rows = getStudentHistory(studentId, subject);
+    if(rows.length === 0) return null;
+    const present = rows.filter(function(r){ return r.status === "present"; }).length;
+    return Math.round((present / rows.length) * 100);
+  }
+
+  /* ---------------- RENDER ROOT ---------------- */
+  function render(){
+    const app = document.getElementById("app");
+    if(!session.role){
+      app.innerHTML = renderLogin();
+      bindLogin();
+    } else if(session.role === "teacher"){
+      app.innerHTML = renderTeacher();
+      bindTeacher();
+    } else {
+      app.innerHTML = renderStudent();
+      bindStudent();
+    }
+    if(levelUpQueue.length){
+      showNextLevelUp();
+    }
+  }
+
+  /* ---------------- LOGIN ---------------- */
+  function renderLogin(){
+    const isTeacher = ui.loginRole === "teacher";
+    let body;
+    if(isTeacher){
+      body = `
+        <div class="field">
+          <label>Faculty Name</label>
+          <input id="teacherNameInput" type="text" placeholder="e.g. Ms. Whitmore" />
+        </div>
+        <div class="field">
+          <label>Passcode</label>
+          <input id="teacherPassInput" type="password" placeholder="••••••••" />
+        </div>
+        <button class="btn-primary" id="teacherEnterBtn">Enter the Hall</button>
+        <div class="card-hint">Faculty access grants roster control across all subjects.</div>
+      `;
+    } else {
+      let cards = "";
+      for(let i=1;i<=STUDENT_COUNT;i++){
+        cards += `
+          <div class="member-card" tabindex="0" data-sid="${i}" role="button">
+            <div class="avatar">${getAvatar(i)}</div>
+            <div class="mname">Student ${i}</div>
+          </div>`;
+      }
+      body = `
+        <div class="card-hint" style="margin-top:-6px;margin-bottom:16px;">Select your membership card to enter</div>
+        <div class="student-grid">${cards}</div>
+      `;
+    }
+
+    return `
+      <div class="login-wrap fade-in">
+        <div class="brand-block">
+          <div class="crest"><span>AX</span></div>
+          <h1>AttendX</h1>
+          <div class="tagline">The Distinguished Society of Presence</div>
+          <div class="rule"></div>
+        </div>
+        <div class="role-toggle">
+          <button data-role="teacher" class="${isTeacher ? 'active' : ''}">Faculty</button>
+          <button data-role="student" class="${!isTeacher ? 'active' : ''}">Member</button>
+        </div>
+        <div class="login-card">${body}</div>
+      </div>
+    `;
+  }
+
+  function bindLogin(){
+    document.querySelectorAll(".role-toggle button").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        ui.loginRole = btn.getAttribute("data-role");
+        render();
+      });
+    });
+    const enterBtn = document.getElementById("teacherEnterBtn");
+    if(enterBtn){
+      enterBtn.addEventListener("click", function(){
+        const nameInput = document.getElementById("teacherNameInput");
+        const name = (nameInput.value || "").trim() || "Faculty Member";
+        session.role = "teacher";
+        session.teacherName = name;
+        ui.pendingMarks = {};
+        render();
+      });
+    }
+    document.querySelectorAll(".member-card").forEach(function(card){
+      function enter(){
+        session.role = "student";
+        session.studentId = parseInt(card.getAttribute("data-sid"), 10);
+        render();
+      }
+      card.addEventListener("click", enter);
+      card.addEventListener("keypress", function(e){ if(e.key === "Enter") enter(); });
+    });
+  }
+
+  /* ---------------- TEACHER DASHBOARD ---------------- */
+  function initPendingMarks(subject){
+    const key = logKey(subject, todayKey());
+    const existing = data.logs[key] || {};
+    const marks = {};
+    data.students.forEach(function(s){
+      marks[s.id] = existing[s.id] || "absent";
+    });
+    ui.pendingMarks = marks;
+  }
+
+  function renderTeacher(){
+    if(!ui.pendingMarks || Object.keys(ui.pendingMarks).length === 0){
+      initPendingMarks(ui.teacherSubject);
+    }
+
+    const subjectPills = SUBJECTS.map(function(s){
+      return `<button class="pill ${s === ui.teacherSubject ? 'active' : ''}" data-subject="${s}">${s}</button>`;
+    }).join("");
+
+    const rosterCards = data.students.map(function(s){
+      const lvl = getLevelInfo(s.xp);
+      const mark = ui.pendingMarks[s.id] || "absent";
+      return `
+        <div class="roster-card">
+          <div class="roster-top">
+            <div class="avatar">${getAvatar(s.id)}</div>
+            <div>
+              <div class="roster-name">Student ${s.id}</div>
+              <div class="roster-rank">${lvl.icon} ${lvl.title}</div>
+            </div>
+          </div>
+          <div class="xp-row"><span>XP ${s.xp}</span><span>${lvl.nextMin ? lvl.nextMin + ' to ascend' : 'Max rank'}</span></div>
+          <div class="xp-bar"><div class="xp-bar-fill" style="width:${lvl.progress}%"></div></div>
+          <div class="toggle-row">
+            <button class="toggle-btn present ${mark === 'present' ? 'active' : ''}" data-sid="${s.id}" data-status="present">Present</button>
+            <button class="toggle-btn absent ${mark === 'absent' ? 'active' : ''}" data-sid="${s.id}" data-status="absent">Absent</button>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    const sorted = data.students.slice().sort(function(a,b){ return b.xp - a.xp; });
+    const board = sorted.slice(0,5).map(function(s, i){
+      const lvl = getLevelInfo(s.xp);
+      return `
+        <div class="board-row ${i === 0 ? 'gold' : ''}">
+          <div class="rank-no">${i+1}</div>
+          <div class="avatar">${getAvatar(s.id)}</div>
+          <div class="name">Student ${s.id} <span style="color:var(--muted-2)">· ${lvl.icon} ${lvl.title}</span></div>
+          <div class="xp mono">${s.xp} XP</div>
+        </div>
+      `;
+    }).join("");
+
+    return `
+      <div class="shell fade-in">
+        <div class="topbar">
+          <div class="id">
+            <div class="crest sm"><span>AX</span></div>
+            <div>
+              <h2>AttendX</h2>
+              <div class="sub">Faculty Console · ${session.teacherName}</div>
+            </div>
+          </div>
+          <button class="btn-ghost" id="logoutBtn">Sign Out</button>
+        </div>
+
+        <div class="section-label">Select Subject</div>
+        <div class="pills">${subjectPills}</div>
+        <div class="session-strip">
+          <span>Session date: <b>${prettyDate()}</b></span>
+          <span>Marking attendance for <b>${ui.teacherSubject}</b></span>
+        </div>
+
+        <div class="section-label">Roster</div>
+        <div class="roster-grid">${rosterCards}</div>
+
+        <div class="save-bar"><button id="saveAttendanceBtn">Save Attendance</button></div>
+
+        <div class="section-label">Roll of Honor — Top Members</div>
+        <div class="board">${board}</div>
+      </div>
+    `;
+  }
+
+  function bindTeacher(){
+    document.getElementById("logoutBtn").addEventListener("click", doLogout);
+    document.querySelectorAll(".pills .pill").forEach(function(p){
+      p.addEventListener("click", function(){
+        ui.teacherSubject = p.getAttribute("data-subject");
+        initPendingMarks(ui.teacherSubject);
+        render();
+      });
+    });
+    document.querySelectorAll(".toggle-btn").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        const sid = btn.getAttribute("data-sid");
+        const status = btn.getAttribute("data-status");
+        ui.pendingMarks[sid] = status;
+        render();
+      });
+    });
+    document.getElementById("saveAttendanceBtn").addEventListener("click", async function(){
+      const marks = {};
+      Object.keys(ui.pendingMarks).forEach(function(sid){ marks[sid] = ui.pendingMarks[sid]; });
+      const ups = applyMarks(ui.teacherSubject, todayKey(), marks);
+      await saveData();
+      if(ups.length){
+        levelUpQueue = levelUpQueue.concat(ups);
+      }
+      render();
+    });
+  }
+
+  /* ---------------- STUDENT DASHBOARD ---------------- */
+  function renderStudent(){
+    const s = getStudent(session.studentId);
+    const lvl = getLevelInfo(s.xp);
+    const key = logKey(ui.studentSubject, todayKey());
+    const todayStatus = (data.logs[key] || {})[s.id];
+
+    const subjectPills = SUBJECTS.map(function(subj){
+      return `<button class="pill ${subj === ui.studentSubject ? 'active' : ''}" data-subject="${subj}">${subj}</button>`;
+    }).join("");
+
+    let statusHtml;
+    if(todayStatus === "present"){
+      statusHtml = `<div class="status-badge present">Checked in today</div>`;
+    } else {
+      statusHtml = `<button class="btn-primary" style="width:auto;padding:12px 26px;" id="checkinBtn">Check In</button>`;
+    }
+
+    const history = getStudentHistory(s.id, ui.studentSubject);
+    const rate = attendanceRate(s.id, ui.studentSubject);
+    const historyRows = history.length
+      ? history.slice(0,8).map(function(r){
+          return `<tr><td>${r.date}</td><td class="status-${r.status}">${r.status === 'present' ? 'Present' : 'Absent'}</td></tr>`;
+        }).join("")
+      : `<tr><td colspan="2" class="empty-row">No sessions recorded yet for ${ui.studentSubject}</td></tr>`;
+
+    return `
+      <div class="shell fade-in">
+        <div class="topbar">
+          <div class="id">
+            <div class="crest sm"><span>AX</span></div>
+            <div>
+              <h2>AttendX</h2>
+              <div class="sub">Member Console · Student ${s.id}</div>
+            </div>
+          </div>
+          <button class="btn-ghost" id="logoutBtn">Sign Out</button>
+        </div>
+
+        <div class="profile-card">
+          <div class="profile-avatar">${getAvatar(s.id)}</div>
+          <div class="profile-info">
+            <div class="pname">Student ${s.id}</div>
+            <div class="prank">${lvl.icon} ${lvl.title} <span class="lv">· Level ${lvl.index + 1}</span></div>
+            <div class="xp-num-row"><span>${s.xp} XP</span><span>${lvl.nextMin ? lvl.nextMin + ' XP to ascend' : 'Highest rank achieved'}</span></div>
+            <div class="xp-bar-lg"><div class="xp-bar-fill" style="width:${lvl.progress}%"></div></div>
+          </div>
+        </div>
+
+        <div class="section-label">Choose Your Subject</div>
+        <div class="pills">${subjectPills}</div>
+
+        <div class="checkin-card">
+          <div class="cc-title">Today's session — <b>${ui.studentSubject}</b><br>${prettyDate()}</div>
+          ${statusHtml}
+        </div>
+
+        <div class="section-label">Attendance Ledger — ${ui.studentSubject} ${rate !== null ? '<span class="mono" style="color:var(--gold-bright)">(' + rate + '% attendance)</span>' : ''}</div>
+        <table class="history-table">
+          <thead><tr><th>Date</th><th>Status</th></tr></thead>
+          <tbody>${historyRows}</tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  function bindStudent(){
+    document.getElementById("logoutBtn").addEventListener("click", doLogout);
+    document.querySelectorAll(".pills .pill").forEach(function(p){
+      p.addEventListener("click", function(){
+        ui.studentSubject = p.getAttribute("data-subject");
+        render();
+      });
+    });
+    const checkinBtn = document.getElementById("checkinBtn");
+    if(checkinBtn){
+      checkinBtn.addEventListener("click", async function(){
+        const marks = {};
+        marks[session.studentId] = "present";
+        const ups = applyMarks(ui.studentSubject, todayKey(), marks);
+        await saveData();
+        if(ups.length){ levelUpQueue = levelUpQueue.concat(ups); }
+        render();
+      });
+    }
+  }
+
+  /* ---------------- LEVEL UP MODAL ---------------- */
+  function showNextLevelUp(){
+    if(!levelUpQueue.length) return;
+    const item = levelUpQueue.shift();
+    const overlay = document.createElement("div");
+    overlay.className = "modal-overlay";
+    overlay.innerHTML = `
+      <div class="levelup-card">
+        <div class="levelup-seal">${item.level.icon}</div>
+        <div class="lu-eyebrow">Ascension Achieved</div>
+        <h3>Student ${item.studentId}</h3>
+        <div class="lu-title">${item.level.title}</div>
+        <button id="lvUpContinue">Continue</button>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+    document.getElementById("lvUpContinue").addEventListener("click", function(){
+      document.body.removeChild(overlay);
+      showNextLevelUp();
+    });
+  }
+
+  function doLogout(){
+    session = { role:null, teacherName:"", studentId:null };
+    ui.pendingMarks = {};
+    render();
+  }
+
+  /* ---------------- BOOT ---------------- */
+  (async function boot(){
+    await loadData();
+    render();
+  })();
+})();
+</script>
+</body>
+</html>
